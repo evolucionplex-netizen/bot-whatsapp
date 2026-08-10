@@ -1,13 +1,17 @@
 {
   "name": "bot-whatsapp",
   "version": "1.0.0",
-  "description": "Bot de WhatsApp",
+  "description": "Bot de WhatsApp con QR en web",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-    "whatsapp-web.js": "^1.24.0",
-    "qrcode-terminal": "^0.12.0"
+    "express": "^4.18.2",
+    "qrcode": "^1.5.3",
+    "whatsapp-web.js": "^1.24.0"
   }
 }
