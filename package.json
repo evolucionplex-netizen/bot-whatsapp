@@ -1,7 +1,7 @@
 {
-  "name": "bot-whatsapp-railway",
-  "version": "1.0.0",
-  "description": "Bot de WhatsApp con recordatorios 8PM",
+  "name": "bot-whatsapp-renovaciones",
+  "version": "1.0",
+  "description": "Bot de WhatsApp que envía recordatorios a las 1PM Colombia",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
