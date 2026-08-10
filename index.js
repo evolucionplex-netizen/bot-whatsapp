@@ -43,7 +43,7 @@ async function conectarWhatsApp() {
 async function revisarVencidos() {
     console.log('Revisando vencidos...');
     const doc = new GoogleSpreadsheet(SHEET_ID);
-    await doc.useServiceAccountAuth(require('./credentials.json'));
+    await doc.useServiceAccountAuth(JSON.parse(process.env.GOOGLE_CREDENTIALS));
     await doc.loadInfo();
     const sheet = doc.sheetsByIndex[0];
     const filas = await sheet.getRows();
