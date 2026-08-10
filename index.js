@@ -3,7 +3,7 @@ const qrcode = require('qrcode-terminal');
 const pino = require('pino');
 
 const startBot = async () => {
-    const { state, saveCreds } = await useMultiFileAuthState('/app/tokens');
+    const { state, saveCreds } = await useMultiFileAuthState('./tokens');
     const { version } = await fetchLatestBaileysVersion();
 
     const sock = makeWASocket({
@@ -20,6 +20,7 @@ const startBot = async () => {
         const { connection, lastDisconnect, qr } = update;
         
         if(qr) {
+            console.log('Escanea este QR:');
             qrcode.generate(qr, {small: true});
         }
 
@@ -34,15 +35,15 @@ const startBot = async () => {
         }
     });
 
-    // Aquí pones tus comandos
+    // Comando de prueba
     sock.ev.on('messages.upsert', async ({ messages }) => {
         const msg = messages[0];
         if (!msg.message || msg.key.fromMe) return;
         
         const text = msg.message.conversation || msg.message.extendedTextMessage?.text;
         
-        if(text === 'hola') {
-            await sock.sendMessage(msg.key.remoteJid, { text: 'Hola bro! El bot ya esta vivo en Railway' });
+        if(text?.toLowerCase() === 'hola') {
+            await sock.sendMessage(msg.key.remoteJid, { text: 'Hola bro! El bot ya esta vivo en Railway con Baileys' });
         }
     });
 }
