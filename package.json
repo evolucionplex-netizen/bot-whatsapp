@@ -1,17 +1,16 @@
 {
-  "name": "bot-whatsapp",
+  "name": "bot-whatsapp-railway",
   "version": "1.0.0",
-  "description": "Bot de WhatsApp con QR en web",
+  "description": "Bot de WhatsApp con recordatorios 8PM",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "express": "^4.18.2",
+    "mysql2": "^3.9.7",
+    "node-cron": "^3.0.3",
     "qrcode": "^1.5.3",
-    "whatsapp-web.js": "^1.24.0"
+    "whatsapp-web.js": "^1.23.0"
   }
 }
