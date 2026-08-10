@@ -1,22 +1,18 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode');
 const express = require('express');
-const mysql = require('mysql2/promise');
+const { google } = require('googleapis');
 const cron = require('node-cron');
 const app = express();
 const port = process.env.PORT || 8080;
 
 let qrCodeData = null;
 
-// 1. CONFIGURA TU BASE DE DATOS AQUÍ
-const dbConfig = {
-    host: 'localhost', // Ej: 'localhost' o 'sql123.hostinger.com'
-    user: 'root', // Tu usuario de BD
-    password: '1234', // Tu contraseña de BD
-    database: 'TU_BASE_DATOS' // Nombre de tu base de datos
-};
+// CONFIG DE TU SHEET
+const SPREADSHEET_ID = '1QSoMlonkk-iCsEMhdYgcjWLxlN-c_AHN0x1y3pWMfW0';
+const SHEET_NAME = 'RENOVACIONES'; 
 
-// 2. TU NUMERO PARA EL REPORTE
+// TU NUMERO PARA EL REPORTE
 const MI_NUMERO = '573228134886@c.us';
 
 const client = new Client({
@@ -37,28 +33,44 @@ client.on('ready', () => {
     iniciarRecordatorios();
 });
 
-client.on('auth_failure', () => {
-    console.log('❌ Error de autenticación. Borra la carpeta.wwebjs_auth');
+// AUTENTICACIÓN CON GOOGLE
+const auth = new google.auth.GoogleAuth({
+    keyFile: 'credentials.json',
+    scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
 });
+const sheets = google.sheets({ version: 'v4', auth });
+
+// FUNCIÓN PARA LEER EL SHEET
+async function leerClientes() {
+    const res = await sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `${SHEET_NAME}!A:F`, // A=ID, B=Nombre, C=WhatsApp, D=FechaRenovación, E=Estado, F=Notificado
+    });
+    const rows = res.data.values;
+    if (!rows || rows.length < 2) return [];
+    
+    // Filtra solo los que tienen Estado = 0. La columna E es la 5
+    return rows.slice(1).filter(row => row[4] === '0').map(row => ({
+        Nombre: row[1],
+        WhatsApp: row[2]
+    }));
+}
 
 // FUNCIÓN PARA ENVIAR LOS MENSAJES
 async function enviarRecordatorios() {
     console.log('⏰ Ejecutando recordatorios de la 1PM...');
     let enviados = 0;
     try {
-        const connection = await mysql.createConnection(dbConfig);
-        // Busca en tabla RENOVACIONES donde Estado = 0
-        const [rows] = await connection.execute('SELECT Nombre, WhatsApp FROM RENOVACIONES WHERE Estado = 0');
+        const clientes = await leerClientes();
 
-        if(rows.length === 0){
+        if(clientes.length === 0){
             console.log('No hay clientes con Estado 0 hoy');
             await client.sendMessage(MI_NUMERO, `🤖 Reporte 1:00 PM\n\nNo hay clientes con Estado 0 para notificar hoy.`);
-            await connection.end();
             return;
         }
 
-        for (const cliente of rows) {
-            const numero = cliente.WhatsApp + '@c.us'; // Ej: 57320266158@c.us
+        for (const cliente of clientes) {
+            const numero = cliente.WhatsApp + '@c.us';
             const mensaje = `Hola ${cliente.Nombre} 👋
 
 Te escribo para recordarte que tu servicio está por vencer.
@@ -69,25 +81,24 @@ Gracias 🙏`;
             await client.sendMessage(numero, mensaje);
             console.log(`✅ Mensaje enviado a: ${cliente.Nombre} - ${cliente.WhatsApp}`);
             enviados++;
-            await new Promise(resolve => setTimeout(resolve, 5000)); // Espera 5 seg entre mensajes
+            await new Promise(resolve => setTimeout(resolve, 5000)); // Espera 5 seg
         }
-        await connection.end();
 
         // TE ENVÍA EL REPORTE A TI
         await client.sendMessage(MI_NUMERO, `🤖 Reporte 1:00 PM\nSe enviaron ${enviados} mensajes de renovación correctamente.`);
 
     } catch (error) {
-        console.log('❌ Error en BD:', error);
+        console.log('❌ Error:', error);
         await client.sendMessage(MI_NUMERO, `❌ Error en el bot a las 1PM: ${error.message}`);
     }
 }
 
-// CRON JOB: SE EJECUTA TODOS LOS DÍAS A LA 1:00 PM HORA COLOMBIA
+// CRON JOB: 1:00 PM COLOMBIA
 function iniciarRecordatorios() {
-    cron.schedule('0 13 *', () => { // 0 13 = 1:00 PM
+    cron.schedule('0 13 *', () => {
         enviarRecordatorios();
     }, {
-        timezone: "America/Bogota" // Hora Colombia
+        timezone: "America/Bogota"
     });
     console.log('Cron de 1PM Colombia activado');
 }
@@ -104,12 +115,9 @@ client.initialize();
 app.get('/', async (req, res) => {
     if (qrCodeData) {
         const qrImage = await qrcode.toDataURL(qrCodeData);
-        res.send(`
-            <h1>Escanea este QR con WhatsApp</h1>
-            <img src="${qrImage}" style="width: 300px; height: 300px;" />
-        `);
+        res.send(`<h1>Escanea este QR con WhatsApp</h1><img src="${qrImage}" style="width: 300px; height: 300px;" />`);
     } else {
-        res.send('<h1>✅ Bot ya conectado</h1><p>El cron de 1PM Colombia está activo</p>');
+        res.send('<h1>✅ Bot conectado</h1><p>Cron de 1PM Colombia activo</p>');
     }
 });
 
