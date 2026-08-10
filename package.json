@@ -12,6 +12,6 @@
       "dependencies": {
         "google-spreadsheet": "^4.0.3",
         "node-cron": "^3.0.3",
-        "whatsapp-web.js": "^1.24.3"
+        "whatsapp-web.js": "^1.24.3""qrcode": "^1.5.3"
       }
     }
