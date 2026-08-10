@@ -1,0 +1,11 @@
+﻿{
+  "name": "bot-whatsapp-renew",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.5.0",
+    "google-spreadsheet": "^4.0.1",
+    "node-cron": "^3.0.3",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
