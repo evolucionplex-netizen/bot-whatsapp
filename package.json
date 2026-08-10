@@ -1,17 +1,13 @@
-    {
-      "name": "bot-whatsapp",
-      "version": "1.0.0",
-      "description": "",
-      "main": "index.js",
-      "scripts": {
-        "start": "node index.js"
-      },
-      "keywords": [],
-      "author": "",
-      "license": "ISC",
-      "dependencies": {
-        "google-spreadsheet": "^4.0.3",
-        "node-cron": "^3.0.3",
-        "whatsapp-web.js": "^1.24.3""qrcode": "^1.5.3"
-      }
-    }
+{
+  "name": "bot-whatsapp",
+  "version": "1.0.0",
+  "description": "Bot de WhatsApp",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "whatsapp-web.js": "^1.24.0",
+    "qrcode": "^1.5.3"
+  }
+}
