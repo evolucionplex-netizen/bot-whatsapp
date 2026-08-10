@@ -8,7 +8,7 @@ client.on('qr', qr => {
     console.log('QR Generado. Te lo envío por WhatsApp');
     
     // CAMBIA ESTE NÚMERO POR EL TUYO CON CÓDIGO DE PAÍS
-    const miNumero = '521TU_NUMERO_AQUI@c.us';
+    const miNumero = 573228134886@c.us';
     
     client.sendMessage(miNumero, `*TU QR PARA VINCULAR* \n\n${qr}\n\nCopia todo eso y pégalo en "Vincular con código"`);
 });
