@@ -1,6 +1,7 @@
 {
-  "name": "bot-whatsapp",
+  "name": "bot-baileys",
   "version": "1.0.0",
+  "description": "Bot de WhatsApp con Baileys para Railway",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
