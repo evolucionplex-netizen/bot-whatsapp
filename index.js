@@ -1,5 +1,10 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
-const qrcode = require('qrcode-terminal');
+const qrcode = require('qrcode');
+const express = require('express');
+const app = express();
+const port = process.env.PORT || 3000;
+
+let qrCodeData = null;
 
 const client = new Client({
     authStrategy: new LocalAuth(),
@@ -8,32 +13,33 @@ const client = new Client({
     }
 });
 
-const miNumero = '573228134886@c.us';
-
-// 1. CUANDO GENERA QR -> LO MUESTRA EN CONSOLA
+// Cuando genere QR lo guardamos
 client.on('qr', qr => {
-    console.log('====================================');
-    console.log(' ESCANEA ESTE QR EN WHATSAPP WEB');
-    console.log('====================================');
-    qrcode.generate(qr, {small: true});
+    console.log('QR Generado');
+    qrCodeData = qr; // Guardamos el código
 });
 
-// 2. CUANDO YA SE CONECTÓ
 client.on('ready', () => {
     console.log('✅ Bot conectado correctamente');
-});
-
-// 3. SI SE DESCONECTA
-client.on('disconnected', (reason) => {
-    console.log('❌ Bot desconectado:', reason);
-});
-
-// 4. SI TÚ LE MANDAS "qr" TE AVISA QUE REVISES LOGS
-client.on('message', async msg => {
-    if (msg.from === miNumero && msg.body.toLowerCase() === 'qr') {
-        msg.reply('Listo, genera un QR nuevo. Ve a Railway > Deploy Logs y escanea el QR que aparece ahí');
-        client.logout(); 
-    }
+    qrCodeData = null; // Borramos el QR porque ya no sirve
 });
 
 client.initialize();
+
+// ESTA ES LA PÁGINA WEB CON EL QR
+app.get('/', async (req, res) => {
+    if (qrCodeData) {
+        const qrImage = await qrcode.toDataURL(qrCodeData);
+        res.send(`
+            <h1>Escanea este QR</h1>
+            <img src="${qrImage}" style="width: 300px; height: 300px;" />
+            <p>Abre WhatsApp > Dispositivos vinculados > Vincular</p>
+        `);
+    } else {
+        res.send('<h1>✅ Bot ya conectado</h1><p>No hay QR pendiente</p>');
+    }
+});
+
+app.listen(port, () => {
+    console.log(`Servidor QR en puerto ${port}`);
+});
