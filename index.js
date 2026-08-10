@@ -10,24 +10,27 @@ const client = new Client({
 });
 
 const miNumero = '573228134886@c.us'; // TU NÚMERO
+let qrGuardado = null; // Aquí guardamos el QR
 
-// 1. CUANDO GENERA QR
+// 1. CUANDO GENERA QR -> SOLO LO GUARDAMOS
 client.on('qr', async qr => {
     console.log('QR Generado.');
-    // Generamos imagen del QR
+    qrGuardado = qr;
     await qrcode.toFile('./qr.png', qr);
-    // Esperamos a que el cliente esté listo
-    setTimeout(async () => {
-        const media = MessageMedia.fromFilePath('./qr.png');
-        await client.sendMessage(miNumero, media, {caption: '*ESCANEA ESTE QR PARA VINCULAR*'});
-        fs.unlinkSync('./qr.png'); // borramos la imagen
-    }, 5000);
 });
 
-// 2. CUANDO YA SE CONECTÓ
-client.on('ready', () => {
+// 2. CUANDO YA SE CONECTÓ -> AHORA SÍ ENVIAMOS
+client.on('ready', async () => {
     console.log('Bot listo!');
-    client.sendMessage(miNumero, '✅ Bot conectado correctamente');
+    await client.sendMessage(miNumero, '✅ Bot conectado correctamente');
+    
+    // Si tenemos un QR guardado, lo enviamos
+    if (qrGuardado) {
+        const media = MessageMedia.fromFilePath('./qr.png');
+        await client.sendMessage(miNumero, media, {caption: '*ESCANEA ESTE QR PARA VINCULAR*'});
+        fs.unlinkSync('./qr.png');
+        qrGuardado = null;
+    }
 });
 
 // 3. SI SE DESCONECTA
@@ -38,7 +41,7 @@ client.on('disconnected', (reason) => {
 // 4. SI ALGUIEN TE ESCRIBE
 client.on('message', async msg => {
     if (msg.from === miNumero && msg.body.toLowerCase() === 'qr') {
-        msg.reply('Generando nuevo QR... espera 5 segundos');
+        msg.reply('Generando nuevo QR... espera 10 segundos y se reiniciará');
         client.logout(); 
     }
 });
