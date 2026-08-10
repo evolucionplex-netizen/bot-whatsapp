@@ -44,12 +44,11 @@ const sheets = google.sheets({ version: 'v4', auth });
 async function leerClientes() {
     const res = await sheets.spreadsheets.values.get({
         spreadsheetId: SPREADSHEET_ID,
-        range: `${SHEET_NAME}!A:F`, // A=ID, B=Nombre, C=WhatsApp, D=FechaRenovación, E=Estado, F=Notificado
+        range: `${SHEET_NAME}!A:F`,
     });
     const rows = res.data.values;
     if (!rows || rows.length < 2) return [];
     
-    // Filtra solo los que tienen Estado = 0. La columna E es la 5
     return rows.slice(1).filter(row => row[4] === '0').map(row => ({
         Nombre: row[1],
         WhatsApp: row[2]
@@ -58,20 +57,20 @@ async function leerClientes() {
 
 // FUNCIÓN PARA ENVIAR LOS MENSAJES
 async function enviarRecordatorios() {
-    console.log('⏰ Ejecutando recordatorios de la 1PM...');
+    console.log('⏰ Ejecutando PRUEBA de recordatorios...');
     let enviados = 0;
     try {
         const clientes = await leerClientes();
 
         if(clientes.length === 0){
-            console.log('No hay clientes con Estado 0 hoy');
-            await client.sendMessage(MI_NUMERO, `🤖 Reporte 1:00 PM\n\nNo hay clientes con Estado 0 para notificar hoy.`);
+            console.log('No hay clientes con Estado 0');
+            await client.sendMessage(MI_NUMERO, `🤖 Reporte PRUEBA\n\nNo hay clientes con Estado 0 para notificar.`);
             return;
         }
 
         for (const cliente of clientes) {
             const numero = cliente.WhatsApp + '@c.us';
-            const mensaje = `Hola ${cliente.Nombre} 👋
+            const mensaje = `[PRUEBA] Hola ${cliente.Nombre} 👋
 
 Te escribo para recordarte que tu servicio está por vencer.
 Para renovar por favor comunícate con nosotros.
@@ -79,33 +78,41 @@ Para renovar por favor comunícate con nosotros.
 Gracias 🙏`;
 
             await client.sendMessage(numero, mensaje);
-            console.log(`✅ Mensaje enviado a: ${cliente.Nombre} - ${cliente.WhatsApp}`);
+            console.log(`✅ PRUEBA enviada a: ${cliente.Nombre}`);
             enviados++;
-            await new Promise(resolve => setTimeout(resolve, 5000)); // Espera 5 seg
+            await new Promise(resolve => setTimeout(resolve, 5000));
         }
 
-        // TE ENVÍA EL REPORTE A TI
-        await client.sendMessage(MI_NUMERO, `🤖 Reporte 1:00 PM\nSe enviaron ${enviados} mensajes de renovación correctamente.`);
+        await client.sendMessage(MI_NUMERO, `🤖 Reporte PRUEBA\nSe enviaron ${enviados} mensajes correctamente.`);
 
     } catch (error) {
         console.log('❌ Error:', error);
-        await client.sendMessage(MI_NUMERO, `❌ Error en el bot a las 1PM: ${error.message}`);
+        await client.sendMessage(MI_NUMERO, `❌ Error en PRUEBA: ${error.message}`);
     }
 }
 
-// CRON JOB: 1:00 PM COLOMBIA
+// CRON JOB: SE EJECUTA EN 10 MINUTOS DESDE QUE INICIA EL BOT
 function iniciarRecordatorios() {
-    cron.schedule('0 13 *', () => {
+    const ahora = new Date();
+    ahora.setMinutes(ahora.getMinutes() + 10);
+    const minutos = ahora.getMinutes();
+    const horas = ahora.getHours();
+
+    cron.schedule(`${minutos} ${horas} *`, () => {
         enviarRecordatorios();
     }, {
         timezone: "America/Bogota"
     });
-    console.log('Cron de 1PM Colombia activado');
+    console.log(`⏳ Prueba programada para las ${horas}:${minutos} hora Colombia`);
 }
 
 client.on('message', async msg => {
     if (msg.body === '!ping') {
         msg.reply('pong 🏓 El bot está vivo');
+    }
+    if (msg.body === '!probar') {
+        msg.reply('Ejecutando prueba manual...');
+        enviarRecordatorios();
     }
 });
 
@@ -117,7 +124,7 @@ app.get('/', async (req, res) => {
         const qrImage = await qrcode.toDataURL(qrCodeData);
         res.send(`<h1>Escanea este QR con WhatsApp</h1><img src="${qrImage}" style="width: 300px; height: 300px;" />`);
     } else {
-        res.send('<h1>✅ Bot conectado</h1><p>Cron de 1PM Colombia activo</p>');
+        res.send('<h1>✅ Bot conectado</h1><p>Prueba en 10 min</p>');
     }
 });
 
