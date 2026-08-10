@@ -1,11 +1,14 @@
-﻿{
-  "name": "bot-whatsapp-renew",
-  "version": "1.0.0",
-  "main": "index.js",
-  "dependencies": {
-    "@whiskeysockets/baileys": "^6.5.0",
-    "google-spreadsheet": "^4.0.1",
-    "node-cron": "^3.0.3",
-    "qrcode-terminal": "^0.12.0"
-  }
-}
+    {
+      "name": "bot-whatsapp",
+      "version": "1.0.0",
+      "description": "Bot WhatsApp + Google Sheets",
+      "main": "index.js",
+      "scripts": {
+        "start": "node index.js"
+      },
+      "dependencies": {
+        "google-spreadsheet": "^4.0.3",
+        "node-cron": "^3.0.3",
+        "whatsapp-web.js": "^1.24.3"
+      }
+    }
